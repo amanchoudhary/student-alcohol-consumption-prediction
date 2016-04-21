@@ -46,6 +46,21 @@ def process(input, dict, dict_start, index):
     dict_start[index] += 1.0
     return dict[index][input]
 
+def normalize_feature(result, index):
+    min_value = 100000000.0
+    max_value = -100000000.0
+    for row in result:
+        val = float(row[index])
+        if val < min_value:
+            min_value = val
+        if val > max_value:
+            max_value = val
+
+    i = 0
+    while i < len(result):
+        result[i][index] = (float(result[i][index])-min_value)/(max_value-min_value)
+        i += 1
+
 def process_input_files(inputs):
     result = []
     for i in range(0, len(inputs)):
@@ -78,7 +93,11 @@ def process_input_files(inputs):
         result[i][14] = float(inputs[i][29])
         result[i][15] = float(inputs[i][31])/20.0
         labels[i] = get_label_for_alcohol_comsumption(float(inputs[i][26]), float(inputs[i][27]))
+        i += 1
 
+    i = 0
+    while i < 16:
+        normalize_feature(result, i)
         i += 1
     return result, labels
 
@@ -87,8 +106,8 @@ inputs = get_inputs()
 features, labels = process_input_files(inputs)
 train_feature, train_label, test_feature, test_label = divide_dataset(features, labels)
 
-# model = SVC()
-model = DecisionTreeClassifier()
+model = SVC()
+# model = DecisionTreeClassifier()
 model.fit(train_feature, train_label)
 result = model.predict(test_feature)
 
