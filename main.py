@@ -2,6 +2,9 @@ import csv
 import random
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from neural_network import prepare_network
+from config import METHOD
+from feature_similarity import feature_correlation
 
 THRESHOLD_ALCOHOL = 3.0
 TESTING_SET_LIMIT = 200
@@ -75,22 +78,39 @@ def process_input_files(inputs):
 
     labels = [0]*len(inputs)
     i = 0
+
     while i < len(inputs):
+        # School feature
         result[i][0] = process(inputs[i][0], dictionary_list, dictionary_start, 0)
+        # Sex feature
         result[i][1] = process(inputs[i][1], dictionary_list, dictionary_start, 1)
+        # Age feature
         result[i][2] = float(inputs[i][2])
+        # Parents status feature
         result[i][3] = process(inputs[i][5], dictionary_list, dictionary_start, 5)
+        # Mother education feature
         result[i][4] = float(inputs[i][6])
+        # Father education feature
         result[i][5] = float(inputs[i][7])
+        # Guardion feature
         result[i][6] = process(inputs[i][11], dictionary_list, dictionary_start, 11)
+        # Weekly study time feature
         result[i][7] = float(inputs[i][13])
+        # Past failure feature
         result[i][8] = float(inputs[i][14])
+        # Extra curricular feature
         result[i][9] = process(inputs[i][18], dictionary_list, dictionary_start, 18)
+        # Higher education feature
         result[i][10] = process(inputs[i][20], dictionary_list, dictionary_start, 20)
+        # Romantic relationship feature
         result[i][11] = process(inputs[i][22], dictionary_list, dictionary_start, 22)
+        # Going out feature
         result[i][12] = float(inputs[i][25])
+        # Heath status feature
         result[i][13] = float(inputs[i][28])
+        # School absence feature
         result[i][14] = float(inputs[i][29])
+        # Final grades feature
         result[i][15] = float(inputs[i][31])/20.0
         labels[i] = get_label_for_alcohol_comsumption(float(inputs[i][26]), float(inputs[i][27]))
         i += 1
@@ -106,10 +126,18 @@ inputs = get_inputs()
 features, labels = process_input_files(inputs)
 train_feature, train_label, test_feature, test_label = divide_dataset(features, labels)
 
-model = SVC()
-# model = DecisionTreeClassifier()
-model.fit(train_feature, train_label)
-result = model.predict(test_feature)
+feature = train_feature + test_feature
+# feature_correlation(feature)
+
+if METHOD is 'SVC' or METHOD is 'DecisionTreeClassifier':
+    if METHOD is 'SVC':
+        model = SVC()
+    if METHOD is 'DecisionTreeClassifier':
+        model = DecisionTreeClassifier()
+    model.fit(train_feature, train_label)
+    result = model.predict(test_feature)
+elif METHOD is 'NeuralNetwork':
+    result = prepare_network(train_feature, train_label, test_feature)
 
 i = 0
 sum = 0
